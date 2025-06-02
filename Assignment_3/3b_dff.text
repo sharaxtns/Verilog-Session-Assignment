@@ -1,0 +1,67 @@
+DESIGNCODE
+
+module mux_dff (
+    input  logic clk,
+    input  logic rst,
+    input  logic S,
+    input  logic D,
+    output logic Q
+);
+    logic mux_out;
+
+    always_comb begin
+        if (S)
+            mux_out = D;
+        else
+            mux_out = Q;
+    end
+    always_ff @(posedge clk) begin
+        if (rst)
+            Q <= 0;
+        else
+            Q <= mux_out;
+    end
+endmodule
+
+
+
+TESTBENCH_CODE
+
+
+`timescale 1ns/1ns
+
+module tb_mux_dff;
+    logic clk, rst, S, D, Q;
+
+    mux_dff dut (
+        .clk(clk),
+        .rst(rst),
+        .S(S),
+        .D(D),
+        .Q(Q)
+    );
+
+    initial clk = 0;
+    always #5 clk = ~clk;
+
+    // VCD dump
+    initial begin
+        $dumpfile("dump.vcd");
+        $dumpvars(1, tb_mux_dff);
+    end
+
+    // Test sequence
+    initial begin
+        rst = 1; S = 0; D = 0;
+        #12;
+        rst = 0;
+
+        S = 1; D = 1; #10;  // Q = 1
+        S = 1; D = 0; #10;  // Q = 0
+        S = 0; D = 1; #10;  // Q remains 0
+        S = 1; D = 1; #10;  // Q = 1
+
+        #10;
+        $finish;
+    end
+endmodule
